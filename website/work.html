@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: 'Sans-serif';
+            display: flex;
+            line-height: 2.1;
+            margin: 0;
+            background-image: url('assets/img/notebookimage.jpg');
+            background-size: cover;
+            background-position: center -2px;
+            background-repeat: no-repeat;
+            color: #fff;
+        }
+        .sidebar {
+            width: 205px;
+            background-color: rgba(0, 100, 0, 0.5);
+            padding: 20px;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            z-index: 1;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #000000;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888888cf;
+            width: 80%;
+            text-align: center;
+        }
+        .close {
+            font-family: 'Times New Roman', Times, serif;
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .content {
+            padding: 20px;
+            flex-grow: 1;
+            margin-left: 245px;
+            z-index: 0;
+        }
+        .content h1 {
+            color: #fff;
+            text-align: left;
+            margin-left: 20px;
+        }
+        .menu-item {
+            list-style-type: none;
+            padding: 10px 0;
+        }
+        .menu-item a {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }    
+        .date-time-picker {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 10px 0;
+        }
+        .date-time-picker label,
+        .date-time-picker input {
+            color: #fff;
+        }
+        .teacher-category {
+            margin-bottom: 10px;
+        }
+        .teacher-category h2 {
+            color: #555;
+        }
+        .teacher-list {
+            padding-top: 20px; 
+        }
+        .teacher-item {
+            line-height: 1.5;
+            margin-bottom: 10px;
+
+        }
+        .teacher-item a {
+            color: #fff;
+            text-decoration: none;
+        }
+        .content ul, .content li, .content h2 {
+            color: #fff;
+        }
+        .content strong,
+        .content a {
+            color: #fff;
+        }
+        .outline-button {
+            border: 2px solid #fff;
+            background-color: transparent;
+            color: #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s, color 0.3s;
+            margin-left: 25px;
+        }
+
+        .outline-button:hover {
+            background-color: transparent;
+            color: #000;
+        } 
+
+    </style>
+    <script>
+        function displayTeachers(className) {
+            var content = document.querySelector('.content');
+            var teachers = getTeachersForClass(className);
+
+            if (teachers.length > 0) {
+                var teacherList = '<h2>Teachers</h2><ul class="teacher-list">';
+                teachers.forEach(function (teacher) {
+                    teacherList += `<li><strong>${teacher.name}</strong> <button class="outline-button" onclick="addReminder('${teacher.name}')">Add Reminder</button></li>`;
+                });
+                teacherList += '</ul>';
+                content.innerHTML = teacherList;
+            } else {
+                content.innerHTML = `<h2>No teachers found for ${className}</h2>`;
+            }
+        }
+
+        function getTeachersForClass(className) {
+            var teachers = [];
+
+            if (className === 'SE') {
+                teachers = [
+                    { name: 'Prasad sir' },
+                    { name: 'Anant sir' },
+                    { name: 'Jennifer mam' },
+                    { name: 'Nancy mam' },
+                    { name: 'Tejaswita mam' }
+                ];
+            } else if (className === 'TE') {
+                teachers = [
+                    { name: 'Pranali mam' },
+                    { name: 'Sneha mam' },
+                    { name: 'Milind sir' },
+                    { name: 'Yogesh sir' },
+                    { name: 'Anita mam' }
+                ];
+            } else if (className === 'BE') {
+                teachers = [
+                    { name: 'Megha mam' },
+                    { name: 'Asmita mam' },
+                    { name: 'Manita mam' },
+                    { name: 'Nilashree mam'}
+                ];
+            }
+
+            return teachers;
+        }
+
+        function showPopupModal(message, senderName) {
+            var modal = document.getElementById('popupModal');
+            modal.style.display = 'block';
+
+            var modalContent = document.querySelector('.modal-content');
+            modalContent.innerHTML = `
+                <h2>Reminder!</h2>
+                <p>${message}</p>
+                <p>Sent by: ${senderName}</p>
+                <button onclick="closePopupModal()">OK</button>
+            `;
+        }
+
+        function closePopupModal() {
+            var modal = document.getElementById('popupModal');
+            modal.style.display = 'none';
+        }
+        function addReminder(teacherName) {
+            var content = document.querySelector('.content');
+            content.innerHTML = `
+                <h2>Add Reminder for ${teacherName}</h2>
+                <form style="color: #fff; display: block; text-align: left; margin: 0" onsubmit="saveReminder(event, '${teacherName}')">
+                    <label for="message">Message:</label>
+                    <input type="text" id="message" required><br><br>
+                    <div class="date-time-picker" style=" justify-content: flex-start; padding: 0">
+                        <label for="deadline">Deadline:</label>
+                        <input type="datetime-local" id="deadline" required>
+                    </div>
+                    <br>
+                    <div style="text-align:left;">
+                        <input type="submit" value="Set Reminder">
+                    </div>
+                </form>
+            `;
+        }
+
+        function displayWelcome() {
+            var content = document.querySelector('.content');
+            content.innerHTML = '<h1 id="welcome-heading">WELCOME!</h1>';
+        }
+
+        function saveReminder(event, teacherName) {
+            event.preventDefault();
+            var message = document.getElementById('message').value;
+            var deadline = document.getElementById('deadline').value;
+            var reminders = JSON.parse(localStorage.getItem('reminders')) || [];
+            reminders.push({ teacher: teacherName, message: message, deadline: deadline });
+            localStorage.setItem('reminders', JSON.stringify(reminders));
+
+            // Show the popup modal
+            setReminderNotification(deadline, message, teacherName);
+
+            // Display welcome page after setting the reminder
+            displayWelcome();
+        }
+
+        function displayHOD() {
+            var content = document.querySelector('.content');
+            content.innerHTML = `
+        <h2>HOD</h2>
+        <form style="color: #fff; display: block; text-align: left; margin: 0" onsubmit="sendReminders(event)">
+            <label for="message">Message:</label>
+            <input type="text" id="message" required><br><br>
+            <div class="date-time-picker" style=" justify-content: flex-start; padding: 0">
+                <label for="Date">Date:</label>
+                <input type="date" id="Date" required onclick="enableTime()">
+            </div>
+            <br>
+            <div class="date-time-picker" style=" justify-content: flex-start; padding: 0">
+                <label for="Time">Time:</label>
+                <input type="time" id="Time" required disabled>
+            </div>
+            <br>
+            <label>Select Classes:</label><br>
+            <input type="checkbox" name="SE"> SE<br>
+            <input type="checkbox" name="TE"> TE<br>
+            <input type="checkbox" name="BE"> BE<br><br>
+            <input type="submit" value="Send Reminders">
+        </form>
+
+            `;
+
+    }
+
+    function setReminderNotification(deadline, message, senderName) {
+        var deadlineTime = new Date(deadline).getTime();
+        var now = new Date().getTime();
+        var timeDifference = deadlineTime - now;
+
+        if (timeDifference > 0) {
+            setTimeout(function() {
+                showPopupModal(message, senderName);
+            }, timeDifference);
+        }
+    }
+
+    function enableTime() {
+            var timeInput = document.getElementById('Time');
+            timeInput.disabled = false;
+
+            var doneButton = document.createElement('button');
+            doneButton.textContent = 'Done';
+            doneButton.onclick = closeTimePicker;
+
+            var dateTimePicker = document.querySelector('.date-time-picker');
+            dateTimePicker.appendChild(doneButton);
+        }
+
+
+    function sendReminders(event) {
+        event.preventDefault();
+        var message = document.getElementById('message').value;
+        var selectedClasses = [];
+        var checkboxes = document.querySelectorAll('input[type=checkbox]:checked');
+
+        checkboxes.forEach(function(checkbox) {
+            selectedClasses.push(checkbox.name);
+    });
+
+    var confirmationMessage = "Reminders sent to: " + selectedClasses.join(", ");
+
+    // Show notification
+    var notification = new Notification("Reminder Sent", {
+        body: confirmationMessage
+    });
+
+    notification.onclick = function() {
+        notification.close();
+    };
+
+    // Remove form elements
+    document.getElementById('message').value = '';
+    document.getElementById('Date').value = '';
+    document.getElementById('Time').value = '';
+    checkboxes.forEach(function(checkbox) {
+        checkbox.checked = false;
+    });
+}
+
+
+    </script>
+</head>
+<body>
+    
+    <div class="sidebar">
+        <ul>
+            <li class="menu-item"><a href="#">Dashboard</a></li>
+            <li class="menu-item"><a onclick="displayHOD()">HOD</a></li>
+            <li class="menu-item"><a onclick="displayTeachers('SE')">SE</a></li>
+            <li class="menu-item"><a onclick="displayTeachers('TE')">TE</a></li>
+            <li class="menu-item"><a onclick="displayTeachers('BE')">BE</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <h1 id="welcome-heading">WELCOME!</h1>
+        <!-- Add your content here -->
+    </div>
+    <div id="popupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePopupModal()">&times;</span>
+            <h2>Reminder!</h2>
+            <p>Your reminder is due now.</p>
+        </div>
+    </div>    
+</body>
+</html>
